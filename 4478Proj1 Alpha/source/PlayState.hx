@@ -4,9 +4,6 @@ import flixel.FlxState;
 import flixel.FlxG;
 import flixel.text.FlxText;
 
-//Summon libraries we created
-import LevelData;
-
 class Square extends FlxState{
 	//Boolean to check if water is present
 	private var wet:Bool;
