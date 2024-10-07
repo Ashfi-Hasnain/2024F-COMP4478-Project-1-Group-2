@@ -41,6 +41,27 @@ class Square extends FlxState{
 		if (type == "Start") wet = true;
 		else wet = false;
 
+		//Inserts the sprites
+		sprite = new FlxSprite(0, 0);
+		switch (type) {
+				case "Segment":
+					sprite.loadGraphic("assets/images/straight-empty");
+					add(sprite);
+				case "Right":
+					sprite.loadGraphic("assets/images/right-empty");
+					add(sprite);
+				case "Start":
+					sprite.loadGraphic("assets/images/start");
+					add(sprite);
+				case "Terminus":
+					sprite.loadGraphic("assets/images/goal");
+					add(sprite);
+				case "Intersection":
+					sprite.loadGraphic("assets/images/T-empty");
+					add(sprite);
+				default:
+			}
+
 		//Stores square numbers
 		this.squareNum = squareNum;
 		column = squareNum % rowSize;
