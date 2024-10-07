@@ -44,23 +44,23 @@ class Square extends FlxState{
 		//Inserts the sprites
 		sprite = new FlxSprite(0, 0);
 		switch (type) {
-				case "Segment":
-					sprite.loadGraphic("assets/images/straight-empty");
-					add(sprite);
-				case "Right":
-					sprite.loadGraphic("assets/images/right-empty");
-					add(sprite);
-				case "Start":
-					sprite.loadGraphic("assets/images/start");
-					add(sprite);
-				case "Terminus":
-					sprite.loadGraphic("assets/images/goal");
-					add(sprite);
-				case "Intersection":
-					sprite.loadGraphic("assets/images/T-empty");
-					add(sprite);
-				default:
-			}
+			case "Segment":
+				sprite.loadGraphic("assets/images/straight-empty");
+				add(sprite);
+			case "Right":
+				sprite.loadGraphic("assets/images/right-empty");
+				add(sprite);
+			case "Start":
+				sprite.loadGraphic("assets/images/start");
+				add(sprite);
+			case "Terminus":
+				sprite.loadGraphic("assets/images/goal");
+				add(sprite);
+			case "Intersection":
+				sprite.loadGraphic("assets/images/T-empty");
+				add(sprite);
+			default:
+		}
 
 		//Stores square numbers
 		this.squareNum = squareNum;
@@ -327,11 +327,30 @@ class Square extends FlxState{
 
 	//Ensures accuracy by checking connections and mapping the grid's plumbing network
 	override public function update(elapsed:Float):Void {
-        super.update(elapsed);
-        checkConnections();
-        map();
-
-        //THIS IS THE WHERE THE GRAPHICS SHOULD BE HANDELED
+	        super.update(elapsed);
+	        checkConnections();
+	        map();
+	
+	        //Inserts the sprites
+		sprite = new FlxSprite(0, 0);
+		switch (type) {
+			case "Segment":
+				if (wet) sprite.loadGraphic("assets/images/straight-blue.png");
+				else sprite.loadGraphic("assets/images/straight-empty.png");
+			case "Right":
+				if (wet) sprite.loadGraphic("assets/images/right-blue.png");
+				else sprite.loadGraphic("assets/images/right-empty.png");
+			case "Start":
+				if (wet) sprite.loadGraphic("assets/images/start.png");
+				else sprite.loadGraphic("assets/images/goal.png");
+			case "Terminus":
+				if (wet) sprite.loadGraphic("assets/images/start.png");
+				else sprite.loadGraphic("assets/images/goal.png");
+			case "Intersection":
+				if (wet) sprite.loadGraphic("assets/images/T-blue.png");
+				else sprite.loadGraphic("assets/images/T-empty.png");
+			default:
+		}
     }
 }
 
