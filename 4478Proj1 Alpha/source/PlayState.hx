@@ -5,7 +5,6 @@ import flixel.FlxG;
 import flixel.text.FlxText;
 
 //Summon libraries we created
-import PlayState.Square;
 import LevelData;
 
 class Square extends FlxState{
