@@ -178,7 +178,7 @@ class MenuState extends FlxState
         if (min == max) return min;
         else{
             var options = max - min + 1;
-            var random = Math.floor(Math.random() % options);
+            var random = Math.floor(Math.random() * options);
             return (min + random);
         }
     }
