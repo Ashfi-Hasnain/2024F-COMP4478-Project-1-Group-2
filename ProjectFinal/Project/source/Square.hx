@@ -97,7 +97,8 @@ class Square extends FlxSprite{
 		sprite.scale.set(scaler , scaler);
 
 		//Assigns a random orientation (0, 1, 2, or 3)
-		for (i in 0...Math.floor(Math.random() % 4)) {
+		var rando:Int = Math.floor(Math.random() * 4);
+		for (i in 0...rando) {
 			this.rotate();
 		}
 	}
