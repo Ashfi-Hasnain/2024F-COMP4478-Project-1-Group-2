@@ -37,6 +37,10 @@ class PlayState extends FlxState
     var psx:Int;
     var psy:Int;
 
+    //Audio sounds
+    var clickSound:flixel.sound.FlxSound;
+    var cheer:flixel.sound.FlxSound;
+
 	//This function prepares the level for creation (back end)
     public function new(level:Int, size:Int){
     	super();
@@ -139,16 +143,31 @@ class PlayState extends FlxState
         add(wintext);
 
         //Sets background colour
-        this.bgColor = 0xFFFAFAFF;		
+        this.bgColor = 0xFFFAFAFF;
+
+        //Ensure the volume is at max
+        FlxG.sound.volume = 1.0; 
+
+        //Saves clciking sound
+        clickSound = new flixel.sound.FlxSound();
+        clickSound = FlxG.sound.load("assets/sounds/707040__vilkas_sound__vs-button-click-03.mp3");	
+
+        //Saves cheer sound
+        cheer = new flixel.sound.FlxSound();
+        cheer = FlxG.sound.load("assets/sounds/481781__gregorquendel__crowd-cheering-strong-cheering-2-short.wav");
     }
 
     //The function to return to main menu and to reset level
     public function goToMenu(){FlxG.switchState(new MenuState());}
-    public function reset(){FlxG.switchState(new PlayState(level, size));}
+    public function reset(){
+    	clickSound.play();
+    	FlxG.switchState(new PlayState(level, size));
+    }
 
     override public function update(elapsed:Float)
 	{
 		super.update(elapsed);
+
 		if (!allWet) {
 			//Exit button back to level select
 			if (exitbutt.overlapsPoint(FlxG.mouse.getWorldPosition()) && FlxG.mouse.justPressed) {
@@ -194,6 +213,7 @@ class PlayState extends FlxState
 	}
 
 	public function victory(){
+		cheer.play();
 		wintext.color = FlxColor.GREEN;
     	wintext.alpha = 1;
     	wintext.x -= 130;
