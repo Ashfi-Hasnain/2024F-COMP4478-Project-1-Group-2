@@ -156,6 +156,18 @@ class PlayState extends FlxState
         	}
         	grid[i].updateS();
         }
+
+	//Checks if victory conditions are met
+	var allWet = true;
+	for (i in 0...grid.length){
+		if (grid[i].moisture() == false) allWet = false;
+	}
+	if (allWet) victory();
+}
+
+	public function victory(){
+		//PLEASE FILL THIS OUT NICLAS
+		
 	}
 
 	//Links neighbouring squares
