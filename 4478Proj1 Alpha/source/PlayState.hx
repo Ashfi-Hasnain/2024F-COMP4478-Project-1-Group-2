@@ -3,356 +3,9 @@ import flixel.FlxSprite;
 import flixel.FlxState;
 import flixel.FlxG;
 import flixel.text.FlxText;
-
-class Square extends FlxState{
-	//Boolean to check if water is present
-	private var wet:Bool;
-
-	//Rotation
-	private var direction:Int;//The direction the pipe faces is an integer between 0 and 3. This number * 90 deg. is the orientation.
-
-	//Adjacent Squares
-	private var up:Square;
-	private var down:Square;
-	private var left:Square;
-	private var right:Square;
-
-	//Square numbers
-	private var row:Int;
-	private var column:Int;
-	private var squareNum:Int;
-
-	//Type of pipe (Start, Segment, Turn, Junction, or Terminus)
-	private var type:String;
-
-	//Checks connection
-	private var upConnect:Bool;
-	private var downConnect:Bool;
-	private var leftConnect:Bool;
-	private var rightConnect:Bool;
-
-	//Initialises the cell
-	public function new(type:String, squareNum:Int, rowSize:Int){
-		super();
-
-		//Finds type, and determines if it is water source or not
-		//Initially, only the source is wet. This will be updated to include cells connected to source.
-		this.type = type;
-		if (type == "Start") wet = true;
-		else wet = false;
-
-		//Inserts the sprites
-		sprite = new FlxSprite(0, 0);
-		switch (type) {
-			case "Segment":
-				sprite.loadGraphic("assets/images/straight-empty");
-				add(sprite);
-			case "Right":
-				sprite.loadGraphic("assets/images/right-empty");
-				add(sprite);
-			case "Start":
-				sprite.loadGraphic("assets/images/start");
-				add(sprite);
-			case "Terminus":
-				sprite.loadGraphic("assets/images/goal");
-				add(sprite);
-			case "Intersection":
-				sprite.loadGraphic("assets/images/T-empty");
-				add(sprite);
-			default:
-		}
-
-		//Stores square numbers
-		this.squareNum = squareNum;
-		column = squareNum % rowSize;
-		row = Std.int((squareNum - column - 1)/rowSize);
-
-		//Assigns a random orientation (0, 1, 2, or 3)
-		direction = Math.floor(Math.random() % 4);
-
-		//Neighbours are not identified yet
-		up = null;
-		down = null;
-		left = null;
-		right = null;
-	}
-
-	//Mutators for the neighbours
-	public function setUp(up:Square) {this.up = up;}
-	public function setDown(down:Square) {this.down = down;}
-	public function setLeft(left:Square) {this.left = left;}
-	public function setRight(right:Square) {this.right = right;}
-
-	//Accessors
-	public function seeType():String {return type;}
-	public function seeDir():Int{return direction;}
-	public function moisture():Bool{return wet;}
-
-	//Methods to fill or clear the pipes
-	public function flood(){if (!wet) wet = true;}
-	public function dry(){
-		if (type == "Start") return; //Ensures source does not run dry
-		else wet = false;
-	}
-
-	//Performs rotations (by 90 degrees)
-	public function rotate(){
-		direction++;
-		if (direction == 4) direction = 0;
-	}
-
-	//Updates squares
-	public function checkConnections() {
-		//Booleans to see if a connection is possible or not
-		var thisEligible = true;
-
-		//Stores type, orientation, and moisture of neighbour
-		var neighbour:String;
-		var nDirection:Int;
-
-		if (up != null){
-			switch (type) {
-				//Determines if this pipe is facing up
-				case "Segment":
-					if (direction % 2 == 0) thisEligible = false;
-					else thisEligible = true;
-				case "Right":
-					if (direction >= 2) thisEligible = true;
-					else thisEligible = false;
-				case "Start":
-					if (direction == 3) thisEligible = true;
-					else thisEligible = false;
-				case "Terminus":
-					if (direction == 3) thisEligible = true;
-					else thisEligible = false;
-				case "Intersection":
-					if (direction == 0) thisEligible = false;
-					else thisEligible = true;
-				default:
-			}
-
-			//If so, ensures neighbouring pipe facing down
-			if (thisEligible){
-				neighbour = up.seeType();
-				nDirection = up.seeDir();
-
-				switch (neighbour) {
-					//Determines if neighbouring pipe is facing down
-					case "Segment":
-						if (nDirection % 2 == 0) upConnect = false;
-						else upConnect = true;
-					case "Right":
-						if (nDirection < 2) upConnect = true;
-						else upConnect = false;
-					case "Start":
-						if (nDirection == 1) upConnect = true;
-						else upConnect = false;
-					case "Terminus":
-						if (nDirection == 1) upConnect = true;
-						else upConnect = false;
-					case "Intersection":
-						if (nDirection == 2) upConnect = false;
-						else upConnect = true;
-					default:
-				}
-			}
-		}
-		else upConnect = false;
-
-		if (down != null){
-			switch (type) {
-				//Determines if this pipe is facing down
-				case "Segment":
-					if (direction % 2 == 0) thisEligible = false;
-					else thisEligible = true;
-				case "Right":
-					if (direction < 2) thisEligible = true;
-					else thisEligible = false;
-				case "Start":
-					if (direction == 1) thisEligible = true;
-					else thisEligible = false;
-				case "Terminus":
-					if (direction == 1) thisEligible = true;
-					else thisEligible = false;
-				case "Intersection":
-					if (direction == 2) thisEligible = false;
-					else thisEligible = true;
-				default:
-			}
-
-			//If so, ensures neighbouring pipe facing up
-			if (thisEligible){
-				neighbour = down.seeType();
-				nDirection = down.seeDir();
-
-				switch (neighbour) {
-					//Determines if neighbouring pipe is facing up
-					case "Segment":
-						if (nDirection % 2 == 0) downConnect = false;
-						else downConnect = true;
-					case "Right":
-						if (nDirection >= 2) downConnect = true;
-						else downConnect = false;
-					case "Start":
-						if (nDirection == 3) downConnect = true;
-						else downConnect = false;
-					case "Terminus":
-						if (nDirection == 3) downConnect = true;
-						else downConnect = false;
-					case "Intersection":
-						if (nDirection == 0) downConnect = false;
-						else downConnect = true;
-					default:
-				}
-			}
-		}
-		else downConnect = false;
-
-		if (left != null){
-			switch (type) {
-				//Determines if this pipe is facing left
-				case "Segment":
-					if (direction % 2 == 1) thisEligible = false;
-					else thisEligible = true;
-				case "Right":
-					if (direction == 1 || direction == 2) thisEligible = true;
-					else thisEligible = false;
-				case "Start":
-					if (direction == 2) thisEligible = true;
-					else thisEligible = false;
-				case "Terminus":
-					if (direction == 2) thisEligible = true;
-					else thisEligible = false;
-				case "Intersection":
-					if (direction == 3) thisEligible = false;
-					else thisEligible = true;
-				default:
-			}
-
-			//If so, ensures neighbouring pipe facing right
-			if (thisEligible){
-				neighbour = left.seeType();
-				nDirection = left.seeDir();
-
-				switch (neighbour) {
-					//Determines if neighbouring pipe is facing right
-					case "Segment":
-						if (nDirection % 2 == 1) leftConnect = false;
-						else leftConnect = true;
-					case "Right":
-						if (nDirection == 0 || nDirection == 3) leftConnect = true;
-						else leftConnect = false;
-					case "Start":
-						if (nDirection == 0) leftConnect = true;
-						else leftConnect = false;
-					case "Terminus":
-						if (nDirection == 0) leftConnect = true;
-						else leftConnect = false;
-					case "Intersection":
-						if (nDirection == 1) leftConnect = false;
-						else leftConnect = true;
-					default:
-				}
-			}
-		}
-		else leftConnect = false;
-
-		if (right != null){
-			switch (type) {
-				//Determines if this pipe is facing right
-				case "Segment":
-					if (direction % 2 == 1) thisEligible = false;
-					else thisEligible = true;
-				case "Right":
-					if (direction == 0 || direction == 3) thisEligible = true;
-					else thisEligible = false;
-				case "Start":
-					if (direction == 0) thisEligible = true;
-					else thisEligible = false;
-				case "Terminus":
-					if (direction == 0) thisEligible = true;
-					else thisEligible = false;
-				case "Intersection":
-					if (direction == 1) thisEligible = false;
-					else thisEligible = true;
-				default:
-			}
-
-			//If so, ensures neighbouring pipe facing left
-			if (thisEligible){
-				neighbour = right.seeType();
-				nDirection = right.seeDir();
-
-
-				switch (neighbour) {
-					//Determines if neighbouring pipe is facing left
-					case "Segment":
-						if (nDirection % 2 == 1) rightConnect = false;
-						else rightConnect = true;
-					case "Right":
-						if (nDirection == 1 || nDirection == 2) rightConnect = true;
-						else rightConnect = false;
-					case "Start":
-						if (nDirection == 2) rightConnect = true;
-						else rightConnect = false;
-					case "Terminus":
-						if (nDirection == 2) rightConnect = true;
-						else rightConnect = false;
-					case "Intersection":
-						if (nDirection == 3) rightConnect = false;
-						else rightConnect = true;
-					default:
-				}
-			}
-		}
-		else rightConnect = false;
-	}
-
-	//Ensures the correct pipes are filled
-	public function map(){
-		//Ensures the correct pipes are filled
-		if (type == "Start") {
-			flood();
-			return;
-		}
-		else {
-			dry();
-			//If connected to a filled pipe then let this fill too
-			if (upConnect) {if (up.moisture()) flood();}
-			if (downConnect) {if (down.moisture()) flood();}
-			if (leftConnect) {if (left.moisture()) flood();}
-			if (rightConnect) {if (right.moisture()) flood();}
-		}
-	}
-
-	//Ensures accuracy by checking connections and mapping the grid's plumbing network
-	override public function update(elapsed:Float):Void {
-	        super.update(elapsed);
-	        checkConnections();
-	        map();
-	
-	        //Inserts the sprites
-		sprite = new FlxSprite(0, 0);
-		switch (type) {
-			case "Segment":
-				if (wet) sprite.loadGraphic("assets/images/straight-blue.png");
-				else sprite.loadGraphic("assets/images/straight-empty.png");
-			case "Right":
-				if (wet) sprite.loadGraphic("assets/images/right-blue.png");
-				else sprite.loadGraphic("assets/images/right-empty.png");
-			case "Start":
-				if (wet) sprite.loadGraphic("assets/images/start.png");
-				else sprite.loadGraphic("assets/images/goal.png");
-			case "Terminus":
-				if (wet) sprite.loadGraphic("assets/images/start.png");
-				else sprite.loadGraphic("assets/images/goal.png");
-			case "Intersection":
-				if (wet) sprite.loadGraphic("assets/images/T-blue.png");
-				else sprite.loadGraphic("assets/images/T-empty.png");
-			default:
-		}
-    }
-}
+import flixel.util.FlxTimer;
+import flixel.math.FlxRect;
+import Square;
 
 class PlayState extends FlxState
 {
@@ -365,6 +18,16 @@ class PlayState extends FlxState
 
 	//Difficulty
 	var difficulty:String;
+
+	var resetbutt:FlxSprite;
+    var rect:FlxSprite;
+
+    var timer:FlxTimer;
+    var timertext:FlxText;
+    var totaltime:Float = 0;
+
+    var psx:Int;
+    var psy:Int;
 
 	//This function prepares the level for creation (back end)
     public function new(level:Int, size:Int){
@@ -406,20 +69,56 @@ class PlayState extends FlxState
     			grid = grid1(grid);
 			default:
     	}
+    	for (i in 0...grid.length) {
+    		add(grid[i].getSprite());
+    	}
     }
 
     override public function create():Void
     {
         super.create();
 
+        //create resetbutton
+        rect = new FlxSprite(100, 100);
+        rect.makeGraphic(100, 50, 0xFF808080);
+        rect.screenCenter();
+        add(rect);
+        resetbutt = new FlxSprite(0, 0);
+        resetbutt.loadGraphic("assets/images/straight-empty.png");
+        resetbutt.screenCenter();
+        resetbutt.scale.set(0.5,0.5);
+        resetbutt.y += 200;
+        add(resetbutt);
+        var text:FlxText = new FlxText(50, 50, 200, "RESET");
+        rect.y += 200;
+        text.size = 24;
+        text.color = 0xFFFFFFFF;
+        text.screenCenter();
+        text.y += 201;
+        text.x += 55;
+        add(text);
+
+        //create playspace
+        var space:FlxSprite = new FlxSprite(0, 0);
+        space.loadGraphic("assets/images/triangle.png");
+        space.scale.set(0.3,0.3);
+        space.screenCenter();
+        add(space);
+
+        //create timer
+        timertext = new FlxText(10, 10, 100, "0:00");
+        timertext.color = 0xFF000000;
+        timertext.size = 24;
+        timertext.screenCenter();
+        timertext.y -= 200;
+        timertext.x += 20;
+        add(timertext);
+
+        timer = new FlxTimer();
+        timer.start(1, updateTimer, 0);
+
         //Sets background colour
-        this.bgColor = 0xFF000000;
-
-        var title = new FlxText(0, 0, 0, "Hello, World!");
-        title.screenCenter();
-        add(title);
-
-        //I DID NOT PUT MY WORK HERE AS I'M STILL WORKING ON THAT. IT WILL BE POSTED LATER ON
+        this.bgColor = 0xFFFAFAFF;		
     }
 
     //The function to return to main menu and to reset level
@@ -430,7 +129,33 @@ class PlayState extends FlxState
 	{
 		super.update(elapsed);
 
-		//THIS NEEDS SOME WORK TOO - ESPECIALLY IF WE ADD A TIMER
+		//Highlights the start button as necessary
+        if (rect.overlapsPoint(FlxG.mouse.getWorldPosition()))
+        {
+            //Highlight if hovering
+            rect.color = 0xFFFF4040;
+
+            //And if clicked then takes to main menu
+            if (FlxG.mouse.justPressed) FlxG.switchState(new PlayState(level, size));
+
+        } else {
+            //Undoes the highlight if no longer hovering
+            rect.color = 0xFF808080;
+        }
+
+        var mousepos = FlxG.mouse.getWorldPosition();
+        for (i in 0...grid.length) {
+			var bounds = new FlxRect(
+	    		grid[i].getSprite().x - grid[i].getSprite().origin.x * grid[i].getSprite().scale.x + 100,
+	    		grid[i].getSprite().y - grid[i].getSprite().origin.y * grid[i].getSprite().scale.y + 100,
+	    		grid[i].getSprite().frameWidth * grid[i].getSprite().scale.x * 0.9,
+	    		grid[i].getSprite().frameHeight * grid[i].getSprite().scale.y* 0.9
+				);
+        	if (bounds.containsPoint(mousepos) && FlxG.mouse.justPressed) {
+        		grid[i].rotate();
+        	}
+        	grid[i].updateS();
+        }
 	}
 
 	//Links neighbouring squares
@@ -454,7 +179,7 @@ class PlayState extends FlxState
 	    grid.push(new Square("Start", 4, 3));
 	    grid.push(new Square("Intersection", 5, 3));
 	    grid.push(new Square("Terminus", 6, 3));
-	    grid.push(new Square("Straight", 7, 3));
+	    grid.push(new Square("Segment", 7, 3));
 	    grid.push(new Square("Right", 8, 3));
 
 	    link(grid, 3);
@@ -530,7 +255,7 @@ class PlayState extends FlxState
 	//Grid 5
 	public function grid5(grid:Array<Square>):Array<Square>{
 	    grid.push(new Square("Terminus", 0, 4));
-	    grid.push(new Square("Straight", 1, 4));
+	    grid.push(new Square("Segment", 1, 4));
 	    grid.push(new Square("Intersection", 2, 4));
 	    grid.push(new Square("Terminus", 3, 4));
 	    grid.push(new Square("Terminus", 4, 4));
@@ -540,7 +265,7 @@ class PlayState extends FlxState
 	    grid.push(new Square("Intersection", 8, 4));
 	    grid.push(new Square("Intersection", 9, 4));
 	    grid.push(new Square("Intersection", 10, 4));
-	    grid.push(new Square("Straight", 11, 4));
+	    grid.push(new Square("Segment", 11, 4));
 	    grid.push(new Square("Right", 12, 4));
 	    grid.push(new Square("Terminus", 13, 4));
 	    grid.push(new Square("Terminus", 14, 4));
@@ -557,8 +282,8 @@ class PlayState extends FlxState
 	    grid.push(new Square("Right", 1, 4));
 	    grid.push(new Square("Terminus", 2, 4));
 	    grid.push(new Square("Terminus", 3, 4));
-	    grid.push(new Square("Straight", 4, 4));
-	    grid.push(new Square("Straight", 5, 4));
+	    grid.push(new Square("Segment", 4, 4));
+	    grid.push(new Square("Segment", 5, 4));
 	    grid.push(new Square("Start", 6, 4));
 	    grid.push(new Square("Intersection", 7, 4));
 	    grid.push(new Square("Intersection", 8, 4));
@@ -588,22 +313,22 @@ class PlayState extends FlxState
 	    grid.push(new Square("Intersection", 8, 6));
 	    grid.push(new Square("Intersection", 9, 6));
 	    grid.push(new Square("Terminus", 10, 6));
-	    grid.push(new Square("Straight", 11, 6));
+	    grid.push(new Square("Segment", 11, 6));
 	    grid.push(new Square("Right", 12, 6));
 	    grid.push(new Square("Right", 13, 6));
 	    grid.push(new Square("Terminus", 14, 6));
 	    grid.push(new Square("Intersection", 15, 6));
 	    grid.push(new Square("Right", 16, 6));
-	    grid.push(new Square("Straight", 17, 6));
+	    grid.push(new Square("Segment", 17, 6));
 	    grid.push(new Square("Terminus", 18, 6));
 	    grid.push(new Square("Right", 19, 6));
 	    grid.push(new Square("Intersection", 20, 6));
-	    grid.push(new Square("Straight", 21, 6));
-	    grid.push(new Square("Straight", 22, 6));
+	    grid.push(new Square("Segment", 21, 6));
+	    grid.push(new Square("Segment", 22, 6));
 	    grid.push(new Square("Intersection", 23, 6));
 	    grid.push(new Square("Intersection", 24, 6));
 	    grid.push(new Square("Right", 25, 6));
-	    grid.push(new Square("Straight", 26, 6));
+	    grid.push(new Square("Segment", 26, 6));
 	    grid.push(new Square("Terminus", 27, 6));
 	    grid.push(new Square("Terminus", 28, 6));
 	    grid.push(new Square("Right", 29, 6));
@@ -611,7 +336,7 @@ class PlayState extends FlxState
 	    grid.push(new Square("Right", 31, 6));
 	    grid.push(new Square("Intersection", 32, 6));
 	    grid.push(new Square("Intersection", 33, 6));
-	    grid.push(new Square("Straight", 34, 6));
+	    grid.push(new Square("Segment", 34, 6));
 	    grid.push(new Square("Start", 35, 6));
 
 	    link(grid, 6);
@@ -625,12 +350,12 @@ class PlayState extends FlxState
 	    grid.push(new Square("Intersection", 1, 6));
 	    grid.push(new Square("Right", 2, 6));
 	    grid.push(new Square("Right", 3, 6));
-	    grid.push(new Square("Straight", 4, 6));
+	    grid.push(new Square("Segment", 4, 6));
 	    grid.push(new Square("Terminus", 5, 6));
-	    grid.push(new Square("Straight", 6, 6));
+	    grid.push(new Square("Segment", 6, 6));
 	    grid.push(new Square("Terminus", 7, 6));
-	    grid.push(new Square("Straight", 8, 6));
-	    grid.push(new Square("Straight", 9, 6));
+	    grid.push(new Square("Segment", 8, 6));
+	    grid.push(new Square("Segment", 9, 6));
 	    grid.push(new Square("Right", 10, 6));
 	    grid.push(new Square("Terminus", 11, 6));
 	    grid.push(new Square("Intersection", 12, 6));
@@ -641,7 +366,7 @@ class PlayState extends FlxState
 	    grid.push(new Square("Right", 17, 6));
 	    grid.push(new Square("Right", 18, 6));
 	    grid.push(new Square("Right", 19, 6));
-	    grid.push(new Square("Straight", 20, 6));
+	    grid.push(new Square("Segment", 20, 6));
 	    grid.push(new Square("Start", 21, 6));
 	    grid.push(new Square("Terminus", 22, 6));
 	    grid.push(new Square("Intersection", 23, 6));
@@ -652,7 +377,7 @@ class PlayState extends FlxState
 	    grid.push(new Square("Right", 28, 6));
 	    grid.push(new Square("Intersection", 29, 6));
 	    grid.push(new Square("Terminus", 30, 6));
-	    grid.push(new Square("Straight", 31, 6));
+	    grid.push(new Square("Segment", 31, 6));
 	    grid.push(new Square("Intersection", 32, 6));
 	    grid.push(new Square("Terminus", 33, 6));
 	    grid.push(new Square("Terminus", 34, 6));
@@ -668,12 +393,12 @@ class PlayState extends FlxState
 	    grid.push(new Square("Terminus", 0, 6));
 	    grid.push(new Square("Intersection", 1, 6));
 	    grid.push(new Square("Intersection", 2, 6));
-	    grid.push(new Square("Straight", 3, 6));
+	    grid.push(new Square("Segment", 3, 6));
 	    grid.push(new Square("Terminus", 4, 6));
 	    grid.push(new Square("Terminus", 5, 6));
 	    grid.push(new Square("Terminus", 6, 6));
-	    grid.push(new Square("Straight", 7, 6));
-	    grid.push(new Square("Straight", 8, 6));
+	    grid.push(new Square("Segment", 7, 6));
+	    grid.push(new Square("Segment", 8, 6));
 	    grid.push(new Square("Start", 9, 6));
 	    grid.push(new Square("Intersection", 10, 6));
 	    grid.push(new Square("Right", 11, 6));
@@ -681,14 +406,14 @@ class PlayState extends FlxState
 	    grid.push(new Square("Right", 13, 6));
 	    grid.push(new Square("Intersection", 14, 6));
 	    grid.push(new Square("Right", 15, 6));
-	    grid.push(new Square("Straight", 16, 6));
+	    grid.push(new Square("Segment", 16, 6));
 	    grid.push(new Square("Terminus", 17, 6));
 	    grid.push(new Square("Terminus", 18, 6));
 	    grid.push(new Square("Intersection", 19, 6));
 	    grid.push(new Square("Right", 20, 6));
 	    grid.push(new Square("Terminus", 21, 6)); 
-	    grid.push(new Square("Straight", 22, 6));
-	    grid.push(new Square("Straight", 23, 6));
+	    grid.push(new Square("Segment", 22, 6));
+	    grid.push(new Square("Segment", 23, 6));
 	    grid.push(new Square("Right", 24, 6));
 	    grid.push(new Square("Intersection", 25, 6));
 	    grid.push(new Square("Intersection", 26, 6));
@@ -711,13 +436,13 @@ class PlayState extends FlxState
 	public function grid10(grid:Array<Square>):Array<Square>{
 	    grid.push(new Square("Right", 0, 10));
 	    grid.push(new Square("Intersection", 1, 10));
-	    grid.push(new Square("Straight", 2, 10));
-	    grid.push(new Square("Straight", 3, 10));
+	    grid.push(new Square("Segment", 2, 10));
+	    grid.push(new Square("Segment", 3, 10));
 	    grid.push(new Square("Intersection", 4, 10));
 	    grid.push(new Square("Terminus", 5, 10));
 	    grid.push(new Square("Terminus", 6, 10));
 	    grid.push(new Square("Right", 7, 10));
-	    grid.push(new Square("Straight", 8, 10));
+	    grid.push(new Square("Segment", 8, 10));
 	    grid.push(new Square("Right", 9, 10));
 	    grid.push(new Square("Terminus", 10, 10));
 	    grid.push(new Square("Terminus", 11, 10));
@@ -725,26 +450,26 @@ class PlayState extends FlxState
 	    grid.push(new Square("Intersection", 13, 10));
 	    grid.push(new Square("Intersection", 14, 10));
 	    grid.push(new Square("Terminus", 15, 10));
-	    grid.push(new Square("Straight", 16, 10));
+	    grid.push(new Square("Segment", 16, 10));
 	    grid.push(new Square("Intersection", 17, 10));
 	    grid.push(new Square("Terminus", 18, 10));
-	    grid.push(new Square("Straight", 19, 10));
+	    grid.push(new Square("Segment", 19, 10));
 	    grid.push(new Square("Terminus", 20, 10));
 	    grid.push(new Square("Terminus", 21, 10));
 	    grid.push(new Square("Intersection", 22, 10));
 	    grid.push(new Square("Right", 23, 10));
-	    grid.push(new Square("Straight", 24, 10));
+	    grid.push(new Square("Segment", 24, 10));
 	    grid.push(new Square("Intersection", 25, 10));
 	    grid.push(new Square("Right", 26, 10));
-	    grid.push(new Square("Straight", 27, 10));
+	    grid.push(new Square("Segment", 27, 10));
 	    grid.push(new Square("Right", 28, 10));
 	    grid.push(new Square("Right", 29, 10));
-	    grid.push(new Square("Straight", 30, 10));
+	    grid.push(new Square("Segment", 30, 10));
 	    grid.push(new Square("Terminus", 31, 10));
-	    grid.push(new Square("Straight", 32, 10));
+	    grid.push(new Square("Segment", 32, 10));
 	    grid.push(new Square("Terminus", 33, 10));
 	    grid.push(new Square("Start", 34, 10));
-	    grid.push(new Square("Straight", 35, 10));
+	    grid.push(new Square("Segment", 35, 10));
 	    grid.push(new Square("Right", 36, 10));
 	    grid.push(new Square("Right", 37, 10));
 	    grid.push(new Square("Right", 38, 10));
@@ -753,7 +478,7 @@ class PlayState extends FlxState
 	    grid.push(new Square("Intersection", 41, 10));
 	    grid.push(new Square("Intersection", 42, 10));
 	    grid.push(new Square("Intersection", 43, 10));
-	    grid.push(new Square("Straight", 44, 10));
+	    grid.push(new Square("Segment", 44, 10));
 	    grid.push(new Square("Intersection", 45, 10));
 	    grid.push(new Square("Intersection", 46, 10));
 	    grid.push(new Square("Right", 47, 10));
@@ -761,25 +486,25 @@ class PlayState extends FlxState
 	    grid.push(new Square("Right", 49, 10));
 	    grid.push(new Square("Right", 50, 10));
 	    grid.push(new Square("Intersection", 51, 10));
-	    grid.push(new Square("Straight", 52, 10));
-	    grid.push(new Square("Straight", 53, 10));
+	    grid.push(new Square("Segment", 52, 10));
+	    grid.push(new Square("Segment", 53, 10));
 	    grid.push(new Square("Terminus", 54, 10));
 	    grid.push(new Square("Intersection", 55, 10));
 	    grid.push(new Square("Intersection", 56, 10));
-	    grid.push(new Square("Straight", 57, 10));
+	    grid.push(new Square("Segment", 57, 10));
 	    grid.push(new Square("Right", 58, 10));
 	    grid.push(new Square("Right", 59, 10));
-	    grid.push(new Square("Straight", 60, 10));
+	    grid.push(new Square("Segment", 60, 10));
 	    grid.push(new Square("Terminus", 61, 10));
 	    grid.push(new Square("Right", 62, 10));
-	    grid.push(new Square("Straight", 63, 10));
+	    grid.push(new Square("Segment", 63, 10));
 	    grid.push(new Square("Intersection", 64, 10));
 	    grid.push(new Square("Right", 65, 10));
 	    grid.push(new Square("Terminus", 66, 10));
-	    grid.push(new Square("Straight", 67, 10));
+	    grid.push(new Square("Segment", 67, 10));
 	    grid.push(new Square("Terminus", 68, 10));
-	    grid.push(new Square("Straight", 69, 10));
-	    grid.push(new Square("Straight", 70, 10));
+	    grid.push(new Square("Segment", 69, 10));
+	    grid.push(new Square("Segment", 70, 10));
 	    grid.push(new Square("Terminus", 71, 10));
 	    grid.push(new Square("Intersection", 72, 10));
 	    grid.push(new Square("Right", 73, 10));
@@ -787,27 +512,27 @@ class PlayState extends FlxState
 	    grid.push(new Square("Right", 75, 10));
 	    grid.push(new Square("Intersection", 76, 10));
 	    grid.push(new Square("Right", 77, 10));
-	    grid.push(new Square("Straight", 78, 10));
-	    grid.push(new Square("Straight", 79, 10));
+	    grid.push(new Square("Segment", 78, 10));
+	    grid.push(new Square("Segment", 79, 10));
 	    grid.push(new Square("Right", 80, 10));
-	    grid.push(new Square("Straight", 81, 10));
+	    grid.push(new Square("Segment", 81, 10));
 	    grid.push(new Square("Right", 82, 10));
 	    grid.push(new Square("Terminus", 83, 10));
-	    grid.push(new Square("Straight", 84, 10));
-	    grid.push(new Square("Straight", 85, 10));
+	    grid.push(new Square("Segment", 84, 10));
+	    grid.push(new Square("Segment", 85, 10));
 	    grid.push(new Square("Right", 86, 10));
-	    grid.push(new Square("Straight", 87, 10));
+	    grid.push(new Square("Segment", 87, 10));
 	    grid.push(new Square("Right", 88, 10));
-	    grid.push(new Square("Straight", 89, 10));
+	    grid.push(new Square("Segment", 89, 10));
 	    grid.push(new Square("Terminus", 90, 10));
-	    grid.push(new Square("Straight", 91, 10));
-	    grid.push(new Square("Straight", 92, 10));
-	    grid.push(new Square("Straight", 93, 10));
+	    grid.push(new Square("Segment", 91, 10));
+	    grid.push(new Square("Segment", 92, 10));
+	    grid.push(new Square("Segment", 93, 10));
 	    grid.push(new Square("Right", 94, 10));
 	    grid.push(new Square("Right", 95, 10));
 	    grid.push(new Square("Terminus", 96, 10));
 	    grid.push(new Square("Terminus", 97, 10));
-	    grid.push(new Square("Straight", 98, 10));
+	    grid.push(new Square("Segment", 98, 10));
 	    grid.push(new Square("Right", 99, 10));
 
 	    link(grid, 10);
@@ -815,4 +540,13 @@ class PlayState extends FlxState
 	    return grid;
 	}
 
+	// timer update function
+    function updateTimer(timer:FlxTimer):Void {
+        totaltime += 1;
+
+        var minutes = Std.int(totaltime / 60);
+        var seconds = Std.int(totaltime % 60);
+
+        timertext.text = minutes + ":" + StringTools.lpad(Std.string(seconds), "0", 2);
+    }
 }
