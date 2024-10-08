@@ -167,7 +167,14 @@ class PlayState extends FlxState
 
 	public function victory(){
 		//PLEASE FILL THIS OUT NICLAS
-		
+
+		//Returns to main menu
+		returnToMenu();
+	}
+
+	//Returns to main menu
+	public function returnToMenu(){
+		FlxG.switchState(new MenuState());
 	}
 
 	//Links neighbouring squares
