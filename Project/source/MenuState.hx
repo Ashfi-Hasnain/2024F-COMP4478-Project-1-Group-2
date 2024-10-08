@@ -14,6 +14,7 @@ class MenuState extends FlxState
     var hardbutt:FlxSprite;
     var insbutt:FlxSprite;
     var instext:FlxText;
+    var clickSound:flixel.sound.FlxSound;
     
     override public function create()
     {
@@ -87,7 +88,14 @@ class MenuState extends FlxState
         add(instext);
 
         //Sets background colour
-        this.bgColor = 0xFFFAFAFF;      
+        this.bgColor = 0xFFFAFAFF;
+
+        //Ensure the volume is at max
+        FlxG.sound.volume = 1.0; 
+
+        //Saves clciking sound
+        clickSound = new flixel.sound.FlxSound();
+        clickSound = FlxG.sound.load("assets/sounds/707040__vilkas_sound__vs-button-click-03.mp3");    
     }
 
     override public function update(elapsed:Float)
@@ -101,7 +109,10 @@ class MenuState extends FlxState
             easybutt.loadGraphic("assets/images/easy-selected.png");
 
             //And if clicked then takes to level
-            if (FlxG.mouse.justPressed) FlxG.switchState(new PlayState(chooseLevel(1,2),3));
+            if (FlxG.mouse.justPressed) {
+                clickSound.play();
+                FlxG.switchState(new PlayState(chooseLevel(1,2),3));
+            }
 
         } else {
             //Undoes the highlight if no longer hovering
@@ -115,7 +126,10 @@ class MenuState extends FlxState
             medbutt.loadGraphic("assets/images/med-selected.png");
 
             //And if clicked then takes to level
-            if (FlxG.mouse.justPressed) FlxG.switchState(new PlayState(chooseLevel(3,6),4));
+            if (FlxG.mouse.justPressed) {
+                clickSound.play();
+                FlxG.switchState(new PlayState(chooseLevel(3,6),4));
+            }
 
         } else {
             //Undoes the highlight if no longer hovering
@@ -129,7 +143,10 @@ class MenuState extends FlxState
             hardbutt.loadGraphic("assets/images/hard-selected.png");
 
             //And if clicked then takes to level
-            if (FlxG.mouse.justPressed) FlxG.switchState(new PlayState(chooseLevel(7,9),6));
+            if (FlxG.mouse.justPressed) {
+                clickSound.play();
+                FlxG.switchState(new PlayState(chooseLevel(7,9),6));
+            }
 
         } else {
             //Undoes the highlight if no longer hovering
@@ -144,7 +161,10 @@ class MenuState extends FlxState
             instext.color = 0xFFFF0000;
 
             //And if clicked then takes to level
-            if (FlxG.mouse.justPressed) FlxG.switchState(new PlayState(10, 10));
+            if (FlxG.mouse.justPressed) {
+                clickSound.play();
+                FlxG.switchState(new PlayState(10, 10));
+            }
 
         } else {
             //Undoes the highlight if no longer hovering
