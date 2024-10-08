@@ -9,6 +9,7 @@ class StartState extends FlxState
 {
     var playbutt:FlxSprite;
     var rect:FlxSprite;
+    var clickSound:flixel.sound.FlxSound;
 
     override public function create():Void
     {
@@ -39,6 +40,18 @@ class StartState extends FlxState
 
         //Sets background colour
         this.bgColor = 0xFFFAFAFF;
+
+        //Ensure the volume is at max
+        FlxG.sound.volume = 1.0; 
+
+        //Adds music:
+        if (FlxG.sound.music == null)
+        {
+            FlxG.sound.playMusic("assets/music/758937__timbre__8-bit-remix-of-timbres-freesound-753470.wav");
+        }
+        //Saves clciking sound
+        clickSound = new flixel.sound.FlxSound();
+        clickSound = FlxG.sound.load("assets/sounds/707040__vilkas_sound__vs-button-click-03.mp3");
     }
 
     //Updates start screen as necessary
@@ -54,7 +67,10 @@ class StartState extends FlxState
             playbutt.loadGraphic("assets/images/straight-blue.png");
 
             //And if clicked then takes to main menu
-            if (FlxG.mouse.justPressed) FlxG.switchState(new MenuState());
+            if (FlxG.mouse.justPressed) {
+                clickSound.play();
+                FlxG.switchState(new MenuState());
+            }
 
         } else {
             //Undoes the highlight if no longer hovering
@@ -63,3 +79,11 @@ class StartState extends FlxState
         }
     }
 }
+
+/*WORKS CITED
+
+BUTTON SOUND: https://freesound.org/people/Vilkas_Sound/sounds/707040/
+CHEER SOUND: https://freesound.org/people/GregorQuendel/sounds/481781/
+MUSIC: https://freesound.org/people/Timbre/sounds/758937/
+
+IMPLEMENTATION: https://haxeflixel.com/documentation/sound-and-music/*/
